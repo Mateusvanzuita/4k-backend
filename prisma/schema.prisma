@@ -1,0 +1,384 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum UserType {
+  COACH
+  STUDENT
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
+enum Plano {
+  MENSAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
+enum TipoPlano {
+  TREINO
+  DIETA
+  FULL
+}
+
+enum Objetivo {
+  PERDA_PESO
+  HIPERTROFIA
+  DEFINICAO
+  SAUDE
+  PERFORMANCE
+  REABILITACAO
+}
+
+enum FrequenciaFotos {
+  SEMANAL
+  QUINZENAL
+  MENSAL
+}
+
+enum RestriacaoAlimentar {
+  VEGETARIANO
+  VEGANO
+  SEM_GLUTEN
+  SEM_LACTOSE
+  DIABETICO
+  HIPERTENSO
+  OUTRO
+}
+
+enum RestriacaoExercicio {
+  LESAO_COLUNA
+  LESAO_JOELHO
+  LESAO_OMBRO
+  LESAO_COTOVELO
+  ARTRITE
+  TENDINITE
+  OUTRO
+}
+
+enum CategoriaAlimento {
+  PROTEINA
+  CARBOIDRATO
+  GORDURA
+  FRUTA
+  VEGETAL
+  LATICINIO
+  OUTRO
+}
+
+enum UnidadeAlimento {
+  GRAMAS
+  MILILITROS
+  UNIDADE
+  COLHER
+  XICARA
+  PORCAO
+}
+
+enum GrupoMuscular {
+  PEITO
+  COSTAS
+  PERNAS
+  OMBROS
+  BRACOS
+  ABDOMEN
+  GLUTEOS
+  PANTURRILHA
+  ANTEBRACO
+  TRAPEZIO
+  CORPO_INTEIRO
+}
+
+enum TipoExercicio {
+  FORCA
+  AEROBICO
+  MOBILIDADE
+  FLEXIBILIDADE
+  FUNCIONAL
+  CARDIO
+}
+
+enum CategoriaExercicio {
+  INICIANTE
+  INTERMEDIARIO
+  AVANCADO
+}
+
+enum TipoSuplemento {
+  SUPLEMENTO
+  MANIPULADO
+}
+
+enum CategoriaSuplemento {
+  TERMOGENICO
+  PRE_TREINO
+  HORMONAL
+  ANTIOXIDANTE
+  DIGESTIVO
+  SONO
+  VITAMINA
+  MINERAL
+  PROTEINA
+  CREATINA
+  BCAA
+  OUTRO
+}
+
+enum MomentoSuplemento {
+  PRE_TREINO
+  POS_TREINO
+  MANHA
+  TARDE
+  NOITE
+  JEJUM
+  REFEICAO
+}
+
+enum TipoHormonio {
+  PEPTIDEO
+  ESTEROIDE
+  TIREOIDE
+  CRESCIMENTO
+  INSULINA
+  CORTISOL
+  TESTOSTERONA
+  OUTRO
+}
+
+enum CategoriaHormonio {
+  // Peptídeos
+  GH_RELEASING
+  INSULINA_LIKE
+  PEPTIDEO_TERAPEUTICO
+  
+  // Esteroides
+  ANABOLICO
+  ANDROGENICO
+  CORTICOSTEROIDE
+  
+  // Tireoide
+  T3
+  T4
+  TSH
+  
+  // Crescimento
+  SOMATOTROPINA
+  IGF
+  
+  // Insulina
+  RAPIDA
+  LENTA
+  INTERMEDIARIA
+  
+  // Outros
+  MODULADOR_HORMONAL
+  OUTRO
+}
+
+enum FrequenciaHormonio {
+  DIARIA
+  DIA_SIM_DIA_NAO
+  DUAS_VEZES_SEMANA
+  SEMANAL
+  QUINZENAL
+  MENSAL
+  CONFORME_NECESSARIO
+}
+
+enum ViaAdministracao {
+  SUBCUTANEA
+  INTRAMUSCULAR
+  ORAL
+  TOPICA
+  NASAL
+  INTRAVENOSA
+}
+
+enum DuracaoUso {
+  DUAS_SEMANAS
+  QUATRO_SEMANAS
+  SEIS_SEMANAS
+  OITO_SEMANAS
+  DOZE_SEMANAS
+  DEZESSEIS_SEMANAS
+  VINTE_SEMANAS
+  CONTINUO
+}
+
+model Aluno {
+  id                    String                  @id @default(cuid())
+  
+  // Dados Pessoais
+  nomeCompleto          String
+  dataNascimento        DateTime
+  idade                 Int
+  sexo                  Sexo
+  altura                Float                 
+  peso                  Float                 
+  email                 String                  @unique
+  senha                 String
+  contato               String                  
+  ativo                 Boolean                 @default(true)
+  
+  // Dados de Plano
+  plano                 Plano
+  tipoPlano             TipoPlano
+  objetivo              Objetivo
+  
+  // Histórico e Restrições
+  jaTreinava            Boolean                 @default(false)
+  restricaoAlimentar    String?
+  restricaoExercicio    String?
+  historicoMedico       String?
+  
+  // Configuração
+  frequenciaFotos       FrequenciaFotos
+  observacoes           String?
+  
+  // Timestamps e relacionamento
+  dataCriacao           DateTime                @default(now())
+  dataAtualizacao       DateTime                @updatedAt
+  
+  // Relacionamento com coach que criou o aluno
+  coach                 User                    @relation("CoachAlunos", fields: [coachId], references: [id], onDelete: Cascade)
+  coachId               String
+
+  @@map("alunos")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String                        // Added password field for bcrypt
+  name          String?
+  role          Role     @default(USER)       // Added role field
+  userType      UserType                      // Added userType field (COACH/STUDENT)
+  avatar        String?                       // Added avatar field
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  alunos            Aluno[]         @relation("CoachAlunos")
+  alimentos         Alimento[]      @relation("CoachAlimentos")
+  exercicios        Exercicio[]     @relation("CoachExercicios")
+  suplementos       Suplemento[]    @relation("CoachSuplementos")
+  hormonios         Hormonio[]      @relation("CoachHormonios")
+  notificationsSent Notification[]  @relation("NotificationSender")
+  notificationsReceived Notification[] @relation("NotificationReceiver")
+
+  @@map("users")
+}
+
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relacionamentos
+  sender     User?   @relation("NotificationSender", fields: [senderId], references: [id])
+  senderId   String?
+  receiver   User    @relation("NotificationReceiver", fields: [receiverId], references: [id])
+  receiverId String
+
+  @@map("notifications")
+}
+
+model Alimento {
+  id           String            @id @default(cuid())
+  nomeAlimento String
+  categoria    CategoriaAlimento
+  quantidade   Float
+  unidade      UnidadeAlimento
+  calorias     Float
+  proteinas    Float
+  carboidratos Float
+  gorduras     Float
+  fibras       Float?
+  observacoes  String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relacionamento com coach que criou o alimento
+  coach   User   @relation("CoachAlimentos", fields: [coachId], references: [id])
+  coachId String
+
+  @@map("alimentos")
+}
+
+model Exercicio {
+  id             String             @id @default(cuid())
+  nomeExercicio  String
+  grupoMuscular  GrupoMuscular
+  tipoExercicio  TipoExercicio
+  categoria      CategoriaExercicio
+  linkVideo      String?
+  descricao      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  // Relacionamento com coach que criou o exercício
+  coach   User   @relation("CoachExercicios", fields: [coachId], references: [id])
+  coachId String
+
+  @@map("exercicios")
+}
+
+model Suplemento {
+  id                String              @id @default(cuid())
+  nomeSuplemento    String?
+  nomeManipulado    String?
+  tipo              TipoSuplemento
+  categoria         CategoriaSuplemento
+  dosagem           String
+  frequencia        String
+  momento           MomentoSuplemento
+  observacoes       String?
+  contraindicacoes  String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relacionamento com coach que criou o suplemento
+  coach   User   @relation("CoachSuplementos", fields: [coachId], references: [id])
+  coachId String
+
+  @@map("suplementos")
+}
+
+model Hormonio {
+  id                  String              @id @default(cuid())
+  nomeHormonio        String
+  tipo                TipoHormonio
+  categoria           CategoriaHormonio
+  dosagem             String
+  frequencia          FrequenciaHormonio
+  viaAdministracao    ViaAdministracao
+  duracaoUso          DuracaoUso
+  observacoes         String?
+  contraindicacoes    String?
+  efeitosColaterais   String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relacionamento com coach que criou o hormônio
+  coach   User   @relation("CoachHormonios", fields: [coachId], references: [id])
+  coachId String
+
+  @@map("hormonios")
+}
