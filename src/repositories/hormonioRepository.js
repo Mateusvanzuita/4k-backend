@@ -115,17 +115,6 @@ class HormonioRepository {
     })
   }
 
-  async getByFrequencia(frequencia, coachId) {
-    return await prisma.hormonio.findMany({
-      where: {
-        frequencia,
-        coachId,
-      },
-      orderBy: {
-        nomeHormonio: "asc",
-      },
-    })
-  }
 }
 
 module.exports = new HormonioRepository()

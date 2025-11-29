@@ -21,14 +21,14 @@ class AlimentoController {
   async getAll(req, res, next) {
     try {
       const coachId = req.user.id
-      const { page = 1, limit = 10, categoria, nomeAlimento, orderBy = "nomeAlimento", order = "asc" } = req.query
+      const { page = 1, limit = 10, categoria, nome, orderBy = "nome", order = "asc" } = req.query
 
       const filters = {
         coachId,
         ...(categoria && { categoria }),
-        ...(nomeAlimento && {
-          nomeAlimento: {
-            contains: nomeAlimento,
+        ...(nome && {
+          nome: {
+            contains: nome,
             mode: "insensitive",
           },
         }),
@@ -36,8 +36,8 @@ class AlimentoController {
 
       const alimentos = await alimentoService.getAll(
         filters,
-        Number.parseInt(page),
-        Number.parseInt(limit),
+        Number(page),
+        Number(limit),
         orderBy,
         order,
       )
@@ -107,12 +107,12 @@ class AlimentoController {
     }
   }
 
-  async getByCategory(req, res, next) {
+  async getByCategoria(req, res, next) {
     try {
       const { categoria } = req.params
       const coachId = req.user.id
 
-      const alimentos = await alimentoService.getByCategory(categoria, coachId)
+      const alimentos = await alimentoService.getByCategoria(categoria, coachId)
 
       res.json({
         success: true,

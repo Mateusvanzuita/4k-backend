@@ -257,29 +257,6 @@ router.get("/via/:viaAdministracao", authenticateToken, requireCoach, hormonioCo
 
 /**
  * @swagger
- * /api/hormonios/frequencia/{frequencia}:
- *   get:
- *     summary: Buscar hormônios por frequência
- *     tags: [Hormônios]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: frequencia
- *         required: true
- *         schema:
- *           type: string
- *         description: Frequência de uso
- *     responses:
- *       200:
- *         description: Hormônios por frequência
- *       401:
- *         description: Não autorizado
- */
-router.get("/frequencia/:frequencia", authenticateToken, requireCoach, hormonioController.getHormoniosByFrequencia)
-
-/**
- * @swagger
  * /api/hormonios/{id}:
  *   get:
  *     summary: Buscar hormônio por ID

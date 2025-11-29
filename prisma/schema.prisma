@@ -301,26 +301,19 @@ model Notification {
 }
 
 model Alimento {
-  id           String            @id @default(cuid())
-  nomeAlimento String
-  categoria    CategoriaAlimento
-  quantidade   Float
-  unidade      UnidadeAlimento
-  calorias     Float
-  proteinas    Float
-  carboidratos Float
-  gorduras     Float
-  fibras       Float?
-  observacoes  String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id          String            @id @default(cuid())
+  nome        String
+  categoria   CategoriaAlimento
+  observacoes String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  // Relacionamento com coach que criou o alimento
   coach   User   @relation("CoachAlimentos", fields: [coachId], references: [id])
   coachId String
 
   @@map("alimentos")
 }
+
 
 model Exercicio {
   id             String             @id @default(cuid())
@@ -346,9 +339,6 @@ model Suplemento {
   nomeManipulado    String?
   tipo              TipoSuplemento
   categoria         CategoriaSuplemento
-  dosagem           String
-  frequencia        String
-  momento           MomentoSuplemento
   observacoes       String?
   contraindicacoes  String?
   createdAt         DateTime            @default(now())
@@ -362,21 +352,17 @@ model Suplemento {
 }
 
 model Hormonio {
-  id                  String              @id @default(cuid())
+  id                  String             @id @default(cuid())
   nomeHormonio        String
   tipo                TipoHormonio
   categoria           CategoriaHormonio
-  dosagem             String
-  frequencia          FrequenciaHormonio
   viaAdministracao    ViaAdministracao
-  duracaoUso          DuracaoUso
   observacoes         String?
   contraindicacoes    String?
   efeitosColaterais   String?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
-  // Relacionamento com coach que criou o hormônio
   coach   User   @relation("CoachHormonios", fields: [coachId], references: [id])
   coachId String
 

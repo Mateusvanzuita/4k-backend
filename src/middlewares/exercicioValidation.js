@@ -45,7 +45,7 @@ const createExercicioValidation = [
     .withMessage(`Categoria deve ser uma das seguintes: ${categoriaExercicioValues.join(", ")}`),
 
   body("linkVideo")
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .isURL()
     .withMessage("Link do vídeo deve ser uma URL válida")
     .custom((value) => {

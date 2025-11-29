@@ -7,16 +7,13 @@ class AlimentoRepository {
       data: alimentoData,
       include: {
         coach: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     })
   }
 
-  async getAll(filters, page, limit, orderBy = "nomeAlimento", order = "asc") {
+  async getAll(filters, page, limit, orderBy = "nome", order = "asc") {
     const skip = (page - 1) * limit
 
     const [alimentos, total] = await Promise.all([
@@ -24,21 +21,14 @@ class AlimentoRepository {
         where: filters,
         skip,
         take: limit,
-        orderBy: {
-          [orderBy]: order,
-        },
+        orderBy: { [orderBy]: order },
         include: {
           coach: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { id: true, name: true },
           },
         },
       }),
-      prisma.alimento.count({
-        where: filters,
-      }),
+      prisma.alimento.count({ where: filters }),
     ])
 
     return {
@@ -54,16 +44,10 @@ class AlimentoRepository {
 
   async getById(id, coachId) {
     return await prisma.alimento.findFirst({
-      where: {
-        id,
-        coachId,
-      },
+      where: { id, coachId },
       include: {
         coach: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     })
@@ -72,16 +56,10 @@ class AlimentoRepository {
   async update(id, updateData) {
     return await prisma.alimento.update({
       where: { id },
-      data: {
-        ...updateData,
-        updatedAt: new Date(),
-      },
+      data: { ...updateData },
       include: {
         coach: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     })
@@ -93,30 +71,10 @@ class AlimentoRepository {
     })
   }
 
-  async getByCategory(categoria, coachId) {
+  async getByCategoria(categoria, coachId) {
     return await prisma.alimento.findMany({
-      where: {
-        categoria,
-        coachId,
-      },
-      orderBy: {
-        nomeAlimento: "asc",
-      },
-    })
-  }
-
-  async searchByName(nomeAlimento, coachId) {
-    return await prisma.alimento.findMany({
-      where: {
-        coachId,
-        nomeAlimento: {
-          contains: nomeAlimento,
-          mode: "insensitive",
-        },
-      },
-      orderBy: {
-        nomeAlimento: "asc",
-      },
+      where: { categoria, coachId },
+      orderBy: { nome: "asc" },
     })
   }
 }

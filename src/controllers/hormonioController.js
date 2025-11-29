@@ -232,26 +232,6 @@ class HormonioController {
     }
   }
 
-  async getHormoniosByFrequencia(req, res) {
-    try {
-      const coachId = req.user.userId
-      const { frequencia } = req.params
-
-      const hormonios = await hormonioService.getHormoniosByFrequencia(frequencia, coachId)
-
-      res.json({
-        message: "Hormônios por frequência recuperados com sucesso",
-        data: hormonios,
-      })
-    } catch (error) {
-      console.error("Erro ao buscar hormônios por frequência:", error)
-      res.status(500).json({
-        error: "Erro interno do servidor",
-        message: error.message,
-      })
-    }
-  }
-
   async searchHormonios(req, res) {
     try {
       // Verificar erros de validação

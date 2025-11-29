@@ -237,6 +237,6 @@ router.delete(
  *       200:
  *         description: Alimentos da categoria
  */
-router.get("/categoria/:categoria", authenticateToken, requireCoach, alimentoController.getByCategory)
+router.get("/categoria/:categoria", authenticateToken, requireCoach, alimentoController.getByCategoria)
 
 module.exports = router

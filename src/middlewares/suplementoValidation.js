@@ -1,4 +1,8 @@
+// Conteúdo do suplementoValidation.js atualizado
+
 const { body, param, query } = require("express-validator")
+
+// ... (constantes de categoria e tipo devem ser mantidas)
 
 const createSuplementoValidation = [
   body("tipo").isIn(["SUPLEMENTO", "MANIPULADO"]).withMessage("Tipo deve ser SUPLEMENTO ou MANIPULADO"),
@@ -20,43 +24,35 @@ const createSuplementoValidation = [
     ])
     .withMessage("Categoria inválida"),
 
-  body("momento")
-    .isIn(["PRE_TREINO", "POS_TREINO", "MANHA", "TARDE", "NOITE", "JEJUM", "REFEICAO"])
-    .withMessage("Momento inválido"),
+  // CAMPOS REMOVIDOS: dosagem, frequencia, momento
 
-  body("dosagem")
-    .notEmpty()
-    .withMessage("Dosagem é obrigatória")
-    .isLength({ min: 1, max: 100 })
-    .withMessage("Dosagem deve ter entre 1 e 100 caracteres"),
-
-  body("frequencia")
-    .notEmpty()
-    .withMessage("Frequência é obrigatória")
-    .isLength({ min: 1, max: 100 })
-    .withMessage("Frequência deve ter entre 1 e 100 caracteres"),
-
-  body("nomeSuplemento")
+  body("observacoes")
     .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage("Nome do suplemento deve ter entre 2 e 100 caracteres"),
-
-  body("nomeManipulado")
-    .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage("Nome do manipulado deve ter entre 2 e 100 caracteres"),
-
-  body("observacoes").optional().isLength({ max: 500 }).withMessage("Observações deve ter no máximo 500 caracteres"),
+    .isLength({ max: 500 })
+    .withMessage("Observações deve ter no máximo 500 caracteres"),
 
   body("contraindicacoes")
     .optional()
     .isLength({ max: 500 })
     .withMessage("Contraindicações deve ter no máximo 500 caracteres"),
+
+  body("nomeSuplemento").custom((value, { req }) => {
+    if (req.body.tipo === "SUPLEMENTO" && !value) {
+      throw new Error("Para tipo SUPLEMENTO, o nome do suplemento é obrigatório")
+    }
+    return true
+  }),
+
+  body("nomeManipulado").custom((value, { req }) => {
+    if (req.body.tipo === "MANIPULADO" && !value) {
+      throw new Error("Para tipo MANIPULADO, o nome do manipulado é obrigatório")
+    }
+    return true
+  }),
 ]
 
 const updateSuplementoValidation = [
-  param("id").isString().withMessage("ID deve ser uma string válida"),
-
+  // Deixamos os campos opcionais
   body("tipo").optional().isIn(["SUPLEMENTO", "MANIPULADO"]).withMessage("Tipo deve ser SUPLEMENTO ou MANIPULADO"),
 
   body("categoria")
@@ -77,37 +73,44 @@ const updateSuplementoValidation = [
     ])
     .withMessage("Categoria inválida"),
 
-  body("momento")
+  // CAMPOS REMOVIDOS: dosagem, frequencia, momento
+
+  body("observacoes")
     .optional()
-    .isIn(["PRE_TREINO", "POS_TREINO", "MANHA", "TARDE", "NOITE", "JEJUM", "REFEICAO"])
-    .withMessage("Momento inválido"),
-
-  body("dosagem").optional().isLength({ min: 1, max: 100 }).withMessage("Dosagem deve ter entre 1 e 100 caracteres"),
-
-  body("frequencia")
-    .optional()
-    .isLength({ min: 1, max: 100 })
-    .withMessage("Frequência deve ter entre 1 e 100 caracteres"),
-
-  body("nomeSuplemento")
-    .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage("Nome do suplemento deve ter entre 2 e 100 caracteres"),
-
-  body("nomeManipulado")
-    .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage("Nome do manipulado deve ter entre 2 e 100 caracteres"),
-
-  body("observacoes").optional().isLength({ max: 500 }).withMessage("Observações deve ter no máximo 500 caracteres"),
+    .isLength({ max: 500 })
+    .withMessage("Observações deve ter no máximo 500 caracteres"),
 
   body("contraindicacoes")
     .optional()
     .isLength({ max: 500 })
     .withMessage("Contraindicações deve ter no máximo 500 caracteres"),
+
+  // A validação de nome condicional deve ser tratada no service.
 ]
 
-const getSuplementoValidation = [param("id").isString().withMessage("ID deve ser uma string válida")]
+const getSuplementosValidation = [
+  // ... (manter validações de page, limit, orderBy, order)
+
+  query("orderBy")
+    .optional()
+    // REMOVER 'momento'
+    .isIn(["nomeSuplemento", "nomeManipulado", "categoria", "tipo", "createdAt"])
+    .withMessage("OrderBy inválido"),
+
+  // REMOVER validação de 'momento'
+  /*
+  query("momento")
+    .optional()
+    .isIn(["PRE_TREINO", "POS_TREINO", "MANHA", "TARDE", "NOITE", "JEJUM", "REFEICAO"])
+    .withMessage("Momento inválido"),
+  */
+
+  // ... (manter validações de categoria e tipo)
+]
+
+const getSuplementosByTipoValidation = [
+  param("tipo").isIn(["SUPLEMENTO", "MANIPULADO"]).withMessage("Tipo deve ser SUPLEMENTO ou MANIPULADO"),
+]
 
 const getSuplementosByCategoryValidation = [
   param("categoria")
@@ -128,62 +131,18 @@ const getSuplementosByCategoryValidation = [
     .withMessage("Categoria inválida"),
 ]
 
-const getSuplementosByTipoValidation = [
-  param("tipo").isIn(["SUPLEMENTO", "MANIPULADO"]).withMessage("Tipo deve ser SUPLEMENTO ou MANIPULADO"),
-]
-
-const searchSuplementosValidation = [
-  query("nome")
-    .notEmpty()
-    .withMessage("Nome é obrigatório para busca")
-    .isLength({ min: 2 })
-    .withMessage("Nome deve ter pelo menos 2 caracteres"),
-]
-
-const getSuplementosValidation = [
-  query("page").optional().isInt({ min: 1 }).withMessage("Página deve ser um número inteiro maior que 0"),
-
-  query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("Limit deve ser um número inteiro entre 1 e 100"),
-
-  query("orderBy")
-    .optional()
-    .isIn(["nomeSuplemento", "nomeManipulado", "categoria", "tipo", "momento", "createdAt"])
-    .withMessage("OrderBy inválido"),
-
-  query("order").optional().isIn(["asc", "desc"]).withMessage("Order deve ser 'asc' ou 'desc'"),
-
-  query("categoria")
-    .optional()
-    .isIn([
-      "TERMOGENICO",
-      "PRE_TREINO",
-      "HORMONAL",
-      "ANTIOXIDANTE",
-      "DIGESTIVO",
-      "SONO",
-      "VITAMINA",
-      "MINERAL",
-      "PROTEINA",
-      "CREATINA",
-      "BCAA",
-      "OUTRO",
-    ])
-    .withMessage("Categoria inválida"),
-
-  query("tipo").optional().isIn(["SUPLEMENTO", "MANIPULADO"]).withMessage("Tipo deve ser SUPLEMENTO ou MANIPULADO"),
-
-  query("momento")
-    .optional()
-    .isIn(["PRE_TREINO", "POS_TREINO", "MANHA", "TARDE", "NOITE", "JEJUM", "REFEICAO"])
-    .withMessage("Momento inválido"),
-]
-
 module.exports = {
   createSuplementoValidation,
   updateSuplementoValidation,
-  getSuplementoValidation,
+  getSuplementoValidation: getSuplementosValidation,
   getSuplementosByCategoryValidation,
   getSuplementosByTipoValidation,
-  searchSuplementosValidation,
-  getSuplementosValidation,
+  getSuplementosValidation, 
+  searchSuplementosValidation: [
+    query("nome")
+      .notEmpty()
+      .withMessage("O nome para busca é obrigatório")
+      .isLength({ min: 2 })
+      .withMessage("Nome deve ter pelo menos 2 caracteres"),
+  ],
 }

@@ -1,12 +1,7 @@
 const suplementoRepository = require("../repositories/suplementoRepository")
 
 class SuplementoService {
-  async createSuplemento(suplementoData, coachId) {
-    // Validação: deve ter pelo menos um nome (suplemento ou manipulado)
-    if (!suplementoData.nomeSuplemento && !suplementoData.nomeManipulado) {
-      throw new Error("Deve ser informado o nome do suplemento ou manipulado")
-    }
-
+ async createSuplemento(suplementoData, coachId) {
     // Validação: se tipo é SUPLEMENTO, deve ter nomeSuplemento
     if (suplementoData.tipo === "SUPLEMENTO" && !suplementoData.nomeSuplemento) {
       throw new Error("Para tipo SUPLEMENTO, o nome do suplemento é obrigatório")
@@ -17,6 +12,8 @@ class SuplementoService {
       throw new Error("Para tipo MANIPULADO, o nome do manipulado é obrigatório")
     }
 
+    // REMOVER a validação de dosagem, frequencia e momento.
+    
     const data = {
       ...suplementoData,
       coachId,
@@ -30,17 +27,18 @@ class SuplementoService {
       coachId,
       ...filters,
     }
+    
+    // REMOVER a inclusão de filtros dos campos removidos (dosagem, frequencia, momento)
+    // Apenas filtros de categoria e tipo devem ser aplicados, se presentes no objeto filters.
 
     return await suplementoRepository.getAll(whereClause, page, limit, orderBy, order)
   }
 
   async getSuplementoById(id, coachId) {
     const suplemento = await suplementoRepository.getById(id, coachId)
-
     if (!suplemento) {
       throw new Error("Suplemento não encontrado")
     }
-
     return suplemento
   }
 
@@ -48,17 +46,23 @@ class SuplementoService {
     // Verificar se o suplemento existe e pertence ao coach
     const existingSuplemento = await suplementoRepository.getById(id, coachId)
     if (!existingSuplemento) {
-      throw new Error("Suplemento não encontrado")
+      throw new Error("Suplemento não encontrado ou não pertence a este coach")
     }
 
-    // Validações similares ao create
-    if (updateData.tipo === "SUPLEMENTO" && !updateData.nomeSuplemento && !existingSuplemento.nomeSuplemento) {
+    // Validações de nome condicional na atualização
+    const finalTipo = updateData.tipo || existingSuplemento.tipo
+    const finalNomeSuplemento = updateData.nomeSuplemento || existingSuplemento.nomeSuplemento
+    const finalNomeManipulado = updateData.nomeManipulado || existingSuplemento.nomeManipulado
+
+    if (finalTipo === "SUPLEMENTO" && !finalNomeSuplemento) {
       throw new Error("Para tipo SUPLEMENTO, o nome do suplemento é obrigatório")
     }
 
-    if (updateData.tipo === "MANIPULADO" && !updateData.nomeManipulado && !existingSuplemento.nomeManipulado) {
+    if (finalTipo === "MANIPULADO" && !finalNomeManipulado) {
       throw new Error("Para tipo MANIPULADO, o nome do manipulado é obrigatório")
     }
+    
+    // REMOVER a validação de dosagem, frequencia e momento
 
     return await suplementoRepository.update(id, updateData)
   }
@@ -67,7 +71,7 @@ class SuplementoService {
     // Verificar se o suplemento existe e pertence ao coach
     const existingSuplemento = await suplementoRepository.getById(id, coachId)
     if (!existingSuplemento) {
-      throw new Error("Suplemento não encontrado")
+      throw new Error("Suplemento não encontrado ou não pertence a este coach")
     }
 
     return await suplementoRepository.delete(id)

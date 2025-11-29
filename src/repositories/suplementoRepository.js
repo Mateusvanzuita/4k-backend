@@ -17,40 +17,45 @@ class SuplementoRepository {
   }
 
   async getAll(filters, page, limit, orderBy = "nomeSuplemento", order = "asc") {
-    const skip = (page - 1) * limit
+      const skip = (page - 1) * limit
 
-    const [suplementos, total] = await Promise.all([
-      prisma.suplemento.findMany({
-        where: filters,
-        skip,
-        take: limit,
-        orderBy: {
-          [orderBy]: order,
-        },
-        include: {
-          coach: {
-            select: {
-              id: true,
-              name: true,
+      // Garantir que orderBy não seja um dos campos removidos
+      if (["dosagem", "frequencia", "momento"].includes(orderBy)) {
+        orderBy = "nomeSuplemento"
+      }
+
+      const [suplementos, total] = await Promise.all([
+        prisma.suplemento.findMany({
+          where: filters,
+          skip,
+          take: limit,
+          orderBy: {
+            [orderBy]: order,
+          },
+          include: {
+            coach: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-      }),
-      prisma.suplemento.count({
-        where: filters,
-      }),
-    ])
+        }),
+        prisma.suplemento.count({
+          where: filters,
+        }),
+      ])
 
-    return {
-      suplementos,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      return {
+        suplementos,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
     }
-  }
 
   async getById(id, coachId) {
     return await prisma.suplemento.findFirst({
