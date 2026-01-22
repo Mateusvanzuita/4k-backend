@@ -16,6 +16,7 @@ const alimentoRoutes = require("./routes/alimentoRoutes")
 const exercicioRoutes = require("./routes/exercicioRoutes")
 const suplementoRoutes = require("./routes/suplementoRoutes")
 const hormonioRoutes = require("./routes/hormonioRoutes")
+const protocoloRoutes = require("./routes/protocoloRoutes")
 
 const errorHandler = require("./middlewares/errorHandler")
 
@@ -82,6 +83,7 @@ app.use("/api/alimentos", alimentoRoutes)
 app.use("/api/exercicios", exercicioRoutes)
 app.use("/api/suplementos", suplementoRoutes)
 app.use("/api/hormonios", hormonioRoutes)
+app.use("/api/protocolos", protocoloRoutes)
 
 // Health check
 app.get("/health", (req, res) => {

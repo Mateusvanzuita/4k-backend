@@ -1,9 +1,12 @@
+// src/controllers/dashboardController.js (CORREÇÃO COMPLETA)
+
 const dashboardService = require("../services/dashboardService")
 
 class DashboardController {
   async getCoachDashboard(req, res, next) {
     try {
-      const coachId = req.user.userId
+      // CORRIGIDO: Usar req.user.id em vez de req.user.userId
+      const coachId = req.user.id 
       const dashboard = await dashboardService.getCoachDashboard(coachId)
 
       res.json({
@@ -17,7 +20,8 @@ class DashboardController {
 
   async getStudentStats(req, res, next) {
     try {
-      const coachId = req.user.userId
+      // CORRIGIDO: Usar req.user.id em vez de req.user.userId
+      const coachId = req.user.id
       const { period = "30" } = req.query
 
       const stats = await dashboardService.getStudentStats(coachId, Number.parseInt(period))
@@ -33,7 +37,8 @@ class DashboardController {
 
   async getRecentStudents(req, res, next) {
     try {
-      const coachId = req.user.userId
+      // CORRIGIDO: Usar req.user.id em vez de req.user.userId
+      const coachId = req.user.id
       const { limit = 5 } = req.query
 
       const recentStudents = await dashboardService.getRecentStudents(coachId, Number.parseInt(limit))

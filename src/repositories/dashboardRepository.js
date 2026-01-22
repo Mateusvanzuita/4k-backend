@@ -1,44 +1,43 @@
+// src/repositories/dashboardRepository.js (CORREÇÃO FINAL)
+
 const { PrismaClient } = require("@prisma/client")
 const prisma = new PrismaClient()
 
 class DashboardRepository {
   async getTotalStudents(coachId) {
-    return await prisma.user.count({
+    return await prisma.aluno.count({
       where: {
         coachId,
-        userType: "STUDENT",
       },
     })
   }
 
   async getActiveProtocols(coachId) {
-    // Considerando protocolos ativos como alunos com planos ativos
-    return await prisma.user.count({
+    // CORREÇÃO: Certificando-se de que 'not' está usando EXATAMENTE 'null'
+    return await prisma.aluno.count({
       where: {
         coachId,
-        userType: "STUDENT",
         tipoPlano: {
-          not: null,
+          not: null, // DEVE ser 'null' (valor literal) para filtrar campos preenchidos
         },
       },
     })
   }
 
   async getRecentStudents(coachId, limit) {
-    return await prisma.user.findMany({
+    return await prisma.aluno.findMany({
       where: {
         coachId,
-        userType: "STUDENT",
       },
       select: {
         id: true,
-        nomeAluno: true,
+        nomeCompleto: true,
         email: true,
         tipoPlano: true,
-        createdAt: true,
+        dataCriacao: true,
       },
       orderBy: {
-        createdAt: "desc",
+        dataCriacao: "desc",
       },
       take: limit,
     })
@@ -48,22 +47,21 @@ class DashboardRepository {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    return await prisma.user.findMany({
+    return await prisma.aluno.findMany({
       where: {
         coachId,
-        userType: "STUDENT",
-        createdAt: {
+        dataCriacao: {
           gte: startDate,
         },
       },
       select: {
         id: true,
-        nomeAluno: true,
+        nomeCompleto: true,
         email: true,
-        createdAt: true,
+        dataCriacao: true,
       },
       orderBy: {
-        createdAt: "desc",
+        dataCriacao: "desc",
       },
     })
   }
@@ -74,22 +72,22 @@ class DashboardRepository {
 
     const [total, newInPeriod, byPlanType] = await Promise.all([
       this.getTotalStudents(coachId),
-      prisma.user.count({
+      
+      prisma.aluno.count({
         where: {
           coachId,
-          userType: "STUDENT",
-          createdAt: {
+          dataCriacao: {
             gte: startDate,
           },
         },
       }),
-      prisma.user.groupBy({
+      
+      prisma.aluno.groupBy({
         by: ["tipoPlano"],
         where: {
           coachId,
-          userType: "STUDENT",
           tipoPlano: {
-            not: null,
+            not: null, // DEVE ser 'null' aqui também
           },
         },
         _count: {
@@ -106,6 +104,24 @@ class DashboardRepository {
         return acc
       }, {}),
     }
+  }
+
+  async getActiveProtocols(coachId) {
+      // Importe o ENUM TipoPlano do Prisma Client
+      // const { TipoPlano } = require("@prisma/client"); // <-- ADICIONE ISSO NO TOPO DO ARQUIVO SE PRECISO
+
+      return await prisma.aluno.count({
+        where: {
+          coachId,
+          tipoPlano: {
+            // Filtra para incluir apenas os valores que *sabemos* que são válidos.
+            // Se TipoPlano for exposto pelo PrismaClient, use-o para a lista de ENUMs.
+            // Caso contrário, use a lista de strings.
+            in: ['DIETA', 'TREINO', 'FULL'], 
+            // Se TipoPlano não for um campo nullable, use where: { tipoPlano: {} }
+          },
+        },
+      });
   }
 }
 
