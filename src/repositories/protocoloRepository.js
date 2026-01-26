@@ -175,38 +175,40 @@ async create(data) {
 }
 
 
-  async findMany(coachId, filters) {
-    const { search, status } = filters
-    
-    const where = {
-        coachId,
-        ...(status && { status }),
-        ...(search && {
-            aluno: {
-                nomeCompleto: { contains: search, mode: "insensitive" }
-            }
-        })
-    }
-
-    return await prisma.protocolo.findMany({
-      where,
-      select: {
-          id: true,
-          nome: true,
-          status: true,
-          dataCriacao: true,
-          alunoId: true,
-          refeicoes: { select: { id: true }, take: 1 }, 
-          planosTreino: { select: { id: true }, take: 1 },
-          suplementosProtocolo: { select: { id: true }, take: 1 },
-          hormoniosProtocolo: { select: { id: true }, take: 1 },
-          aluno: {
-              select: { nomeCompleto: true }
-          }
-      },
-      orderBy: { dataCriacao: "desc" }
+async findMany(userId, userType, filters) {
+  const { search, status } = filters;
+  
+  const where = {
+    ...(userType === "STUDENT" ? { alunoId: userId } : { coachId: userId }),
+    ...(status && { status }),
+    ...(search && {
+      aluno: {
+        nomeCompleto: { contains: search, mode: "insensitive" }
+      }
     })
-  }
+  };
+
+  return await prisma.protocolo.findMany({
+    where,
+    // 💡 Alteração aqui: Se for aluno, trazemos o objeto completo (protocoloSelect)
+    // Se for coach, mantemos o resumo para a listagem não ficar pesada.
+    select: userType === "STUDENT" ? protocoloSelect : {
+        id: true,
+        nome: true,
+        status: true,
+        dataCriacao: true,
+        alunoId: true,
+        refeicoes: { select: { id: true }, take: 1 }, 
+        planosTreino: { select: { id: true }, take: 1 },
+        suplementosProtocolo: { select: { id: true }, take: 1 },
+        hormoniosProtocolo: { select: { id: true }, take: 1 },
+        aluno: {
+            select: { nomeCompleto: true }
+        }
+    },
+    orderBy: { dataCriacao: "desc" }
+  });
+}
 
   async findById(id, coachId) {
     return await prisma.protocolo.findFirst({

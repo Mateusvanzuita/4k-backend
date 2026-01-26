@@ -17,6 +17,8 @@ const exercicioRoutes = require("./routes/exercicioRoutes")
 const suplementoRoutes = require("./routes/suplementoRoutes")
 const hormonioRoutes = require("./routes/hormonioRoutes")
 const protocoloRoutes = require("./routes/protocoloRoutes")
+const relatorioRoutes = require("./routes/relatorioRoutes");
+const evolucaoRoutes = require("./routes/evolucaoRoutes");
 
 const errorHandler = require("./middlewares/errorHandler")
 
@@ -39,7 +41,18 @@ app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true }))
 
 // Servir arquivos estáticos (uploads)
-app.use("/uploads", express.static("uploads"))
+const path = require('path'); // Verifique se já existe no topo, se não, adicione
+
+// Substitua a linha app.use("/uploads", express.static("uploads")) por:
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // 💡 Permite carregar fotos em domínios diferentes
+    crossOriginOpenerPolicy: { policy: "unsafe-none" },    // 💡 Resolve o erro NotSameOrigin dos logs
+  })
+);
+
+// Mantenha a configuração de arquivos estáticos que já fizemos
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Swagger configuration
 const swaggerOptions = {
@@ -84,6 +97,8 @@ app.use("/api/exercicios", exercicioRoutes)
 app.use("/api/suplementos", suplementoRoutes)
 app.use("/api/hormonios", hormonioRoutes)
 app.use("/api/protocolos", protocoloRoutes)
+app.use("/api/relatorios", relatorioRoutes);
+app.use("/api/evolucao", evolucaoRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

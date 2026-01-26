@@ -28,6 +28,21 @@ class StudentController {
     }
   }
 
+async getProfileMe(req, res, next) {
+    try {
+      // req.user.id vem do seu authenticateToken middleware
+      const userId = req.user.id;
+      const profile = await studentService.getStudentProfile(userId);
+
+      res.json({
+        success: true,
+        data: profile
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getStudents(req, res, next) {
     try {
       const coachId = req.user.id

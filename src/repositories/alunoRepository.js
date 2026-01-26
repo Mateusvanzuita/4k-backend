@@ -189,6 +189,39 @@ class StudentRepository {
     await prisma.aluno.delete({ where: { id } })
     return true
   }
+
+async findProfileByUserId(userId) {
+  // 💡 Busca direta na tabela alunos, onde a Maria Julia reside
+  const aluno = await prisma.aluno.findUnique({
+    where: { id: userId },
+    include: {
+      coach: {
+        select: { name: true }
+      }
+    }
+  });
+
+  if (!aluno) return null;
+
+  return {
+    nomeCompleto: aluno.nomeCompleto,
+    email: aluno.email,
+    idade: aluno.idade,
+    plano: aluno.plano,
+    tipoPlano: aluno.tipoPlano,
+    objetivo: aluno.objetivo,
+    dataInicio: aluno.dataCriacao, 
+    avatar: null,
+    coachNome: aluno.coach?.name
+  };
+}
+
+async updateFirstAccess(id) {
+    return await prisma.aluno.update({
+      where: { id },
+      data: { primeiroAcesso: true }
+    });
+  }
 }
 
 module.exports = new StudentRepository()

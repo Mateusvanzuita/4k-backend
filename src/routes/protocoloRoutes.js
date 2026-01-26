@@ -17,7 +17,7 @@ const { createProtocoloValidation, updateProtocoloValidation } = require("../mid
 router.post(
   "/",
   authenticateToken,
-  requireCoach,
+  // requireCoach,
   createProtocoloValidation,
   protocoloController.createProtocolo
 )
@@ -26,7 +26,7 @@ router.post(
 router.get(
   "/",
   authenticateToken,
-  requireCoach,
+  // requireCoach,
   protocoloController.getProtocolos
 )
 
@@ -34,7 +34,7 @@ router.get(
 router.get(
   "/:id",
   authenticateToken,
-  requireCoach,
+  // requireCoach,
   protocoloController.getProtocoloById
 )
 
@@ -42,7 +42,7 @@ router.get(
 router.put(
   "/:id",
   authenticateToken,
-  requireCoach,
+  // requireCoach,
   updateProtocoloValidation,
   protocoloController.updateProtocolo
 )
@@ -51,7 +51,7 @@ router.put(
 router.post(
     "/:id/clone",
     authenticateToken,
-    requireCoach,
+    // requireCoach,
     protocoloController.cloneProtocolo
 )
 
@@ -59,7 +59,7 @@ router.post(
 router.delete(
   "/:id",
   authenticateToken,
-  requireCoach,
+  // requireCoach,
   protocoloController.deleteProtocolo
 )
 

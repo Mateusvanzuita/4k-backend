@@ -18,14 +18,18 @@ const login = async (req, res, next) => {
   }
 }
 
+// src/controllers/authController.js
+
 const getProfile = async (req, res, next) => {
   try {
-    const profile = await authService.getProfile(req.user.id)
-    res.json(profile)
+    // 💡 Se o middleware passou, o req.user já está pronto e validado
+    console.log("📡 Enviando perfil para o frontend:", req.user.email);
+    res.json(req.user);
   } catch (error) {
-    next(error)
+    console.error("❌ Erro no getProfile Controller:", error);
+    next(error);
   }
-}
+};
 
 module.exports = {
   register,

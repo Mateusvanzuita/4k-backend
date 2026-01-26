@@ -92,6 +92,7 @@ const { createStudentValidation, updateStudentValidation } = require("../middlew
  *       403:
  *         description: Apenas coaches podem criar alunos
  */
+router.get("/profile/me", authenticateToken, studentController.getProfileMe);
 router.post("/", authenticateToken, requireCoach, createStudentValidation, studentController.createStudent)
 
 /**

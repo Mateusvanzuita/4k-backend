@@ -25,18 +25,19 @@ class ProtocoloController {
   }
 
   // GET /api/protocolos
-  async getProtocolos(req, res, next) {
-    try {
-      const coachId = req.user.id
-      const filters = req.query
+async getProtocolos(req, res, next) {
+  try {
+    const { id, userType } = req.user;
+    const filters = req.query;
 
-      const protocolos = await protocoloService.getProtocolos(coachId, filters)
+    // Se for Aluno, passamos o ID como alunoId, se não, como coachId
+    const protocolos = await protocoloService.getProtocolos(id, userType, filters);
 
-      res.json({ success: true, data: protocolos })
-    } catch (error) {
-      next(error)
-    }
+    res.json({ success: true, data: protocolos });
+  } catch (error) {
+    next(error);
   }
+}
 
   // GET /api/protocolos/:id
   async getProtocoloById(req, res, next) {

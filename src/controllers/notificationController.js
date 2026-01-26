@@ -1,20 +1,29 @@
 const notificationService = require("../services/notificationService")
 
-const createNotification = async (req, res, next) => {
-  try {
-    const notification = await notificationService.createNotification(req.body, req.user.id)
-    res.status(201).json(notification)
-  } catch (error) {
-    next(error)
-  }
+const createNotification = async (notificationData, senderId) => {
+  const { title, message, receiverId } = notificationData;
+  console.log("🔔 Tentando criar notificação para:", receiverId);
+
+  const result = await notificationRepository.create({
+    title,
+    message,
+    receiverId,
+    senderId, // Se o senderId for de um ALUNO, isso pode causar erro se o Prisma esperar um USER
+  });
+  
+  console.log("✅ Notificação criada com ID:", result.id);
+  return result;
 }
 
+// Em notificationController.js
 const getNotifications = async (req, res, next) => {
   try {
-    const notifications = await notificationService.getNotifications(req.user.id, req.query)
-    res.json(notifications)
+    console.log("📡 Coach solicitando notificações. ID do Coach logado:", req.user.id);
+    const notifications = await notificationService.getNotifications(req.user.id, req.query);
+    console.log(`📊 Total de notificações encontradas para este ID: ${notifications.length}`);
+    res.json(notifications);
   } catch (error) {
-    next(error)
+    next(error);
   }
 }
 

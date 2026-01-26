@@ -15,9 +15,9 @@ class ProtocoloService {
     return await protocoloRepository.create(data)
   }
 
-  async getProtocolos(coachId, filters) {
-    return await protocoloRepository.findMany(coachId, filters)
-  }
+async getProtocolos(userId, userType, filters) {
+  return await protocoloRepository.findMany(userId, userType, filters);
+}
 
   async getProtocoloById(id, coachId) {
     return await protocoloRepository.findById(id, coachId)

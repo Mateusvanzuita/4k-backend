@@ -2,6 +2,10 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const userRepository = require("../repositories/userRepository")
 const notificationService = require("./notificationService")
+const studentRepository = require("../repositories/alunoRepository");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -39,13 +43,13 @@ const register = async (userData, currentUser) => {
   // Enviar notificação de boas-vindas
   if (userType === "STUDENT") {
     await notificationService.createNotification(
-      {
-        title: "Bem-vindo ao 4K Team!",
-        message: `Olá ${name}, você foi cadastrado como aluno. Bem-vindo à equipe!`,
-        receiverId: newUser.id,
-      },
-      currentUser.id,
-    )
+        {
+          title: "Primeiro Acesso Realizado! 🚀",
+          message: `${student.nomeCompleto} acabou de entrar no app pela primeira vez!`,
+          receiverId: student.coachId,
+        },
+        null // Passamos null aqui para evitar o erro de chave estrangeira
+      );
   }
 
   const token = generateToken(newUser.id)
@@ -62,18 +66,56 @@ const register = async (userData, currentUser) => {
   }
 }
 
+// src/services/authService.js
+
 const login = async ({ email, password }) => {
-  const user = await userRepository.findByEmail(email)
+  // 1. Tenta buscar primeiro na tabela de usuários (Coach/Admin)
+  let user = await userRepository.findByEmail(email);
+  let dbPassword = user?.password;
+  let userTypeFound = user?.userType;
+  let coachIdToNotify = null; // Para guardar o ID do coach caso seja aluno
+
+  // 2. Se NÃO achar em 'users', tenta buscar na tabela de 'alunos'
   if (!user) {
-    throw new Error("Credenciais inválidas")
+    // 💡 IMPORTANTE: Incluímos o coachId na busca para saber quem notificar
+    const student = await prisma.aluno.findUnique({ where: { email } });
+    
+    if (!student) {
+      throw new Error("Credenciais inválidas");
+    }
+
+    // Lógica de Primeiro Acesso
+    if (student.primeiroAcesso === false) {
+      await studentRepository.updateFirstAccess(student.id);
+      
+      await notificationService.createNotification(
+        {
+          title: "Primeiro Acesso Realizado! 🚀",
+          message: `${student.nomeCompleto} acabou de entrar no app pela primeira vez!`,
+          receiverId: student.coachId,
+        },
+        null // 💡 ALTERAÇÃO: Mude de student.id para null aqui
+      ).catch(err => console.error("Erro ao enviar notificação:", err));
+    }
+
+    user = {
+      id: student.id,
+      email: student.email,
+      name: student.nomeCompleto,
+      userType: "STUDENT",
+      role: "USER"
+    };
+    dbPassword = student.senha;
+    userTypeFound = "STUDENT";
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password)
+  // 3. Compara a senha (continua igual...)
+  const isPasswordValid = await bcrypt.compare(password, dbPassword);
   if (!isPasswordValid) {
-    throw new Error("Credenciais inválidas")
+    throw new Error("Credenciais inválidas");
   }
 
-  const token = generateToken(user.id)
+  const token = generateToken(user.id);
 
   return {
     user: {
@@ -81,12 +123,12 @@ const login = async ({ email, password }) => {
       email: user.email,
       name: user.name,
       role: user.role,
-      userType: user.userType,
-      avatar: user.avatar,
+      userType: userTypeFound,
+      avatar: user.avatar || null,
     },
     token,
-  }
-}
+  };
+};
 
 const getProfile = async (userId) => {
   const user = await userRepository.findById(userId)

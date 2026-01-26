@@ -75,6 +75,14 @@ class StudentService {
   async deleteStudent(id, coachId) {
     return await studentRepository.delete(id, coachId)
   }
+
+  async getStudentProfile(userId) {
+      const perfil = await studentRepository.findProfileByUserId(userId);
+      if (!perfil) {
+        throw new Error("Perfil do aluno não encontrado");
+      }
+      return perfil;
+    }
 }
 
 module.exports = new StudentService()
