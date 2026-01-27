@@ -33,19 +33,26 @@ class StudentController {
 
 async saveSubscription(req, res, next) {
   try {
-    const userId = req.user.id; // ID vindo do token
+    const userId = req.user.id; // ID validado pelo middleware auth.js
     const { subscription } = req.body;
 
-    // 💡 Tenta atualizar nas duas tabelas para não ter erro
-    const isAluno = await prisma.aluno.findUnique({ where: { id: userId } });
-    
-    if (isAluno) {
-      await prisma.aluno.update({ where: { id: userId }, data: { pushSubscription: subscription } });
-    } else {
-      // Se não é aluno, é Coach (User)
-      await prisma.user.update({ where: { id: userId }, data: { pushSubscription: subscription } });
-    }
-    res.json({ success: true });
+    // 🚀 Tenta atualizar em ambas as tabelas ao mesmo tempo.
+    // O updateMany não quebra se o ID não existir em uma delas.
+    const [resUser, resAluno] = await Promise.all([
+      prisma.user.updateMany({
+        where: { id: userId },
+        data: { pushSubscription: subscription }
+      }),
+      prisma.aluno.updateMany({
+        where: { id: userId },
+        data: { pushSubscription: subscription }
+      })
+    ]);
+
+    return res.json({ 
+      success: true, 
+      saved: { coach: resUser.count > 0, aluno: resAluno.count > 0 } 
+    });
   } catch (error) {
     next(error);
   }
