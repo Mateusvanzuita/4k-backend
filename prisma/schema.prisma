@@ -283,6 +283,7 @@ model User {
   avatar        String?                       // Added avatar field
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  pushSubscription Json?
   
   alunos            Aluno[]         @relation("CoachAlunos")
   alimentos         Alimento[]      @relation("CoachAlimentos")

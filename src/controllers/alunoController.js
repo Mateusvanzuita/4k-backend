@@ -30,38 +30,37 @@ class StudentController {
 
 
 async saveSubscription(req, res, next) {
-    try {
-      const userId = req.user.id; // ID extraído do token
-      const { subscription } = req.body;
+  try {
+    const userId = req.user.id;
+    const { subscription } = req.body;
 
-      if (!subscription) {
-        return res.status(400).json({ success: false, message: "Assinatura não fornecida" });
-      }
+    console.log(`\n=== 📥 RECEBENDO ASSINATURA PUSH ===`);
+    console.log(`👤 ID do Usuário: ${userId}`);
+    console.log(`📦 Dados:`, JSON.stringify(subscription).substring(0, 50) + "...");
 
-      console.log(`📡 Salvando assinatura de push para o usuário: ${userId}`);
-
-      // Tentamos salvar na tabela de Alunos
-      const isAluno = await prisma.aluno.findUnique({ where: { id: userId } });
-      
-      if (isAluno) {
-        await prisma.aluno.update({
-          where: { id: userId },
-          data: { pushSubscription: subscription }
-        });
-      } else {
-        // Se não for aluno, salva na tabela de Users (Coach)
-        await prisma.user.update({
-          where: { id: userId },
-          data: { pushSubscription: subscription }
-        });
-      }
-
-      res.json({ success: true, message: "Dispositivo registrado com sucesso!" });
-    } catch (error) {
-      console.error("Erro ao salvar assinatura:", error);
-      next(error);
+    const isAluno = await prisma.aluno.findUnique({ where: { id: userId } });
+    
+    let updated;
+    if (isAluno) {
+      updated = await prisma.aluno.update({
+        where: { id: userId },
+        data: { pushSubscription: subscription }
+      });
+      console.log("✅ [DB] Gravado na tabela ALUNOS");
+    } else {
+      updated = await prisma.user.update({
+        where: { id: userId },
+        data: { pushSubscription: subscription }
+      });
+      console.log("✅ [DB] Gravado na tabela USERS (Coach)");
     }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("❌ [DB] Erro ao salvar subscription:", error.message);
+    next(error);
   }
+}
 
 async getProfileMe(req, res, next) {
     try {
