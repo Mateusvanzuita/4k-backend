@@ -33,33 +33,20 @@ class StudentController {
 
 async saveSubscription(req, res, next) {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // ID vindo do token
     const { subscription } = req.body;
 
-    console.log(`\n=== 📥 RECEBENDO ASSINATURA PUSH ===`);
-    console.log(`👤 ID do Usuário: ${userId}`);
-    console.log(`📦 Dados:`, JSON.stringify(subscription).substring(0, 50) + "...");
-
+    // 💡 Tenta atualizar nas duas tabelas para não ter erro
     const isAluno = await prisma.aluno.findUnique({ where: { id: userId } });
     
-    let updated;
     if (isAluno) {
-      updated = await prisma.aluno.update({
-        where: { id: userId },
-        data: { pushSubscription: subscription }
-      });
-      console.log("✅ [DB] Gravado na tabela ALUNOS");
+      await prisma.aluno.update({ where: { id: userId }, data: { pushSubscription: subscription } });
     } else {
-      updated = await prisma.user.update({
-        where: { id: userId },
-        data: { pushSubscription: subscription }
-      });
-      console.log("✅ [DB] Gravado na tabela USERS (Coach)");
+      // Se não é aluno, é Coach (User)
+      await prisma.user.update({ where: { id: userId }, data: { pushSubscription: subscription } });
     }
-
     res.json({ success: true });
   } catch (error) {
-    console.error("❌ [DB] Erro ao salvar subscription:", error.message);
     next(error);
   }
 }
