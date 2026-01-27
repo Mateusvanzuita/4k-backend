@@ -133,6 +133,20 @@ class StudentRepository {
         observacoes: true,
         dataCriacao: true,
         dataAtualizacao: true,
+        registrosEvolucao: {
+        select: {
+          id: true,
+          dataCriacao: true,
+          peso: true,
+          observacao: true,
+          fotos: { // ✅ Relação definida no model RegistroEvolucao 
+            select: {
+              url: true // ✅ Campo da imagem no model FotoEvolucao [cite: 19]
+            }
+          }
+        },
+        orderBy: { dataCriacao: 'desc' } // Mostra as fotos mais recentes primeiro
+      },
         coach: {
           select: {
             id: true,
