@@ -28,6 +28,41 @@ class StudentController {
     }
   }
 
+
+async saveSubscription(req, res, next) {
+    try {
+      const userId = req.user.id; // ID extraído do token
+      const { subscription } = req.body;
+
+      if (!subscription) {
+        return res.status(400).json({ success: false, message: "Assinatura não fornecida" });
+      }
+
+      console.log(`📡 Salvando assinatura de push para o usuário: ${userId}`);
+
+      // Tentamos salvar na tabela de Alunos
+      const isAluno = await prisma.aluno.findUnique({ where: { id: userId } });
+      
+      if (isAluno) {
+        await prisma.aluno.update({
+          where: { id: userId },
+          data: { pushSubscription: subscription }
+        });
+      } else {
+        // Se não for aluno, salva na tabela de Users (Coach)
+        await prisma.user.update({
+          where: { id: userId },
+          data: { pushSubscription: subscription }
+        });
+      }
+
+      res.json({ success: true, message: "Dispositivo registrado com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao salvar assinatura:", error);
+      next(error);
+    }
+  }
+
 async getProfileMe(req, res, next) {
     try {
       // req.user.id vem do seu authenticateToken middleware
