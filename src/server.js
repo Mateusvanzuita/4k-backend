@@ -40,7 +40,7 @@ app.use(limiter)
 // Middlewares
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true }))
-
+app.set('trust proxy', 1);
 // Servir arquivos estáticos (uploads)
 const path = require('path'); // Verifique se já existe no topo, se não, adicione
 
