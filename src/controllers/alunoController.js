@@ -1,5 +1,7 @@
 const studentService = require("../services/alunoService")
 const { validationResult } = require("express-validator")
+const { PrismaClient } = require("@prisma/client")
+const prisma = new PrismaClient()
 
 class StudentController {
   async createStudent(req, res, next) {
