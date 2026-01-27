@@ -1,16 +1,19 @@
 const prisma = require("../config/database")
 
-// Em notificationRepository.js
 const create = async (notificationData) => {
   console.log("💾 Persistindo no banco. Dados recebidos:", notificationData);
   
+  const { title, message, receiverId, senderId, isStudent } = notificationData;
+
   try {
     const result = await prisma.notification.create({
-      data: notificationData,
-      include: {
-        sender: {
-          select: { id: true, name: true, avatar: true },
-        },
+      data: {
+        title,
+        message,
+        senderId,
+        // 💡 Mapeia para o campo correto baseado no tipo de destinatário 
+        receiverAlunoId: isStudent ? receiverId : null,
+        receiverUserId: !isStudent ? receiverId : null,
       },
     });
     console.log("🚀 Notificação gravada com sucesso no BD:", result.id);
@@ -18,7 +21,7 @@ const create = async (notificationData) => {
   } catch (error) {
     console.error("🚨 ERRO CRÍTICO no Prisma ao criar notificação:");
     console.error("Mensagem:", error.message);
-    console.error("Código do Erro:", error.code); // Ex: P2003 (Erro de Chave Estrangeira)
+    console.error("Código do Erro:", error.code);
     throw error;
   }
 }
@@ -32,7 +35,14 @@ const findById = async (id) => {
 const findByUserId = async (userId, filters = {}) => {
   const { read } = filters
 
-  const where = { receiverId: userId }
+  // 💡 Busca o ID em ambos os campos possíveis 
+  const where = {
+    OR: [
+      { receiverUserId: userId },
+      { receiverAlunoId: userId }
+    ]
+  }
+  
   if (read !== undefined) where.read = read === "true"
 
   return await prisma.notification.findMany({

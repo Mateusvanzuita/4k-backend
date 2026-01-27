@@ -41,7 +41,7 @@ const authenticateToken = async (req, res, next) => {
       console.log(`🔎 Usuário não encontrado em 'users', buscando id ${currentId} em 'alunos'...`);
       const aluno = await prisma.aluno.findUnique({
         where: { id: currentId },
-        select: { id: true, email: true, nomeCompleto: true, plano: true }
+        select: { id: true, email: true, nomeCompleto: true, plano: true, coachId: true }
       })
 
       if (aluno) {
@@ -50,6 +50,7 @@ const authenticateToken = async (req, res, next) => {
           id: aluno.id,
           email: aluno.email,
           name: aluno.nomeCompleto,
+          coachId: aluno.coachId,
           role: "USER",
           userType: "STUDENT" 
         }

@@ -19,6 +19,7 @@ const hormonioRoutes = require("./routes/hormonioRoutes")
 const protocoloRoutes = require("./routes/protocoloRoutes")
 const relatorioRoutes = require("./routes/relatorioRoutes");
 const evolucaoRoutes = require("./routes/evolucaoRoutes");
+const cronService = require('./services/cronService');
 
 const errorHandler = require("./middlewares/errorHandler")
 
@@ -28,7 +29,7 @@ const PORT = process.env.PORT || 3000
 // Middlewares de segurança
 app.use(helmet())
 app.use(cors())
-
+cronService.checkPhotoFrequencies();
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos

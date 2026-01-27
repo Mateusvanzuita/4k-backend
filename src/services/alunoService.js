@@ -1,4 +1,5 @@
 const studentRepository = require("../repositories/alunoRepository")
+const notificationService = require("./notificationService")
 const bcrypt = require("bcryptjs")
 
 class StudentService {
@@ -29,7 +30,23 @@ class StudentService {
     // ===== Ajustar nome =====
     studentData.nomeCompleto = studentData.nomeAluno
 
-    return await studentRepository.create(studentData)
+    const student = await studentRepository.create(studentData);
+
+    if (student) {
+        // Envia notificação de boas-vindas
+        // 💡 isStudent: true garante que o receiverAlunoId seja preenchido no BD
+        await notificationService.createNotification({
+            title: "Bem-vindo ao Time! 🚀",
+            message: `Seu perfil foi criado. Ficou definido que você enviará fotos de evolução com frequência ${student.frequenciaFotos}. Vamos pra cima!`,
+            receiverId: student.id,
+            isStudent: true 
+        }, null).catch(err => {
+            // Logamos o erro mas não interrompemos o retorno do aluno criado
+            console.error("⚠️ Falha ao enviar notificação de boas-vindas:", err.message);
+        });
+    }
+
+    return student;
   }
 
   async getStudents(filters, pagination) {
@@ -59,12 +76,10 @@ class StudentService {
       updateData.dataNascimento = birthDate
     }
 
-    // Hash se trocar senha
     if (updateData.senha) {
       updateData.senha = await bcrypt.hash(updateData.senha, 10)
     }
 
-    // Nome atualizado
     if (updateData.nomeAluno) {
       updateData.nomeCompleto = updateData.nomeAluno
     }

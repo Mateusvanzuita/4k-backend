@@ -6,7 +6,7 @@ class StudentRepository {
     return await prisma.aluno.create({
       data: {
         nomeCompleto: studentData.nomeCompleto,
-        dataNascimento: studentData.dataNascimento, // Added dataNascimento
+        dataNascimento: studentData.dataNascimento,
         idade: studentData.idade,
         sexo: studentData.sexo,
         altura: studentData.altura,
@@ -18,33 +18,33 @@ class StudentRepository {
         tipoPlano: studentData.tipoPlano,
         objetivo: studentData.objetivo,
         jaTreinava: studentData.jaTreinava ?? false,
-        restricaoAlimentar: studentData.restricaoAlimentar, // Added restricaoAlimentar
-        restricaoExercicio: studentData.restricaoExercicio, // Added restricaoExercicio
-        historicoMedico: studentData.historicoMedico, // Added historicoMedico
+        restricaoAlimentar: studentData.restricaoAlimentar,
+        restricaoExercicio: studentData.restricaoExercicio,
+        historicoMedico: studentData.historicoMedico,
         frequenciaFotos: studentData.frequenciaFotos,
-        observacoes: studentData.observacoes, // Added observacoes
+        observacoes: studentData.observacoes,
         coachId: studentData.coachId,
       },
       select: {
         id: true,
         nomeCompleto: true,
-        dataNascimento: true, // Added to select
+        dataNascimento: true,
         idade: true,
         sexo: true,
         altura: true,
         peso: true,
         email: true,
-        contato: true, // Added to select
+        contato: true,
         plano: true,
         tipoPlano: true,
         objetivo: true,
-        jaTreinava: true, // Added to select
-        restricaoAlimentar: true, // Added to select
-        restricaoExercicio: true, // Added to select
-        historicoMedico: true, // Added to select
+        jaTreinava: true,
+        restricaoAlimentar: true,
+        restricaoExercicio: true,
+        historicoMedico: true,
         frequenciaFotos: true,
-        observacoes: true, // Added to select
-        dataCriacao: true,
+        observacoes: true,
+        dataCriacao: true, // Crucial para o CronService
         coach: {
           select: {
             id: true,
@@ -79,13 +79,13 @@ class StudentRepository {
         select: {
           id: true,
           nomeCompleto: true,
-          dataNascimento: true, // Added to select
+          dataNascimento: true,
           idade: true,
           sexo: true,
           altura: true,
           peso: true,
           email: true,
-          contato: true, // Added to select
+          contato: true,
           plano: true,
           tipoPlano: true,
           objetivo: true,
@@ -115,19 +115,19 @@ class StudentRepository {
       select: {
         id: true,
         nomeCompleto: true,
-        dataNascimento: true, // Added to select
+        dataNascimento: true,
         idade: true,
         sexo: true,
         altura: true,
         peso: true,
         email: true,
-        contato: true, // Added to select
+        contato: true,
         plano: true,
         tipoPlano: true,
         objetivo: true,
-        jaTreinava: true, // Added to select
-        restricaoAlimentar: true, // Added to select
-        restricaoExercicio: true, // Added to select
+        jaTreinava: true,
+        restricaoAlimentar: true,
+        restricaoExercicio: true,
         historicoMedico: true,
         frequenciaFotos: true,
         observacoes: true,
@@ -154,19 +154,19 @@ class StudentRepository {
       select: {
         id: true,
         nomeCompleto: true,
-        dataNascimento: true, // Added to select
+        dataNascimento: true,
         idade: true,
         sexo: true,
         altura: true,
         peso: true,
         email: true,
-        contato: true, // Added to select
+        contato: true,
         plano: true,
         tipoPlano: true,
         objetivo: true,
-        jaTreinava: true, // Added to select
-        restricaoAlimentar: true, // Added to select
-        restricaoExercicio: true, // Added to select
+        jaTreinava: true,
+        restricaoAlimentar: true,
+        restricaoExercicio: true,
         historicoMedico: true,
         frequenciaFotos: true,
         observacoes: true,
@@ -190,33 +190,33 @@ class StudentRepository {
     return true
   }
 
-async findProfileByUserId(userId) {
-  // 💡 Busca direta na tabela alunos, onde a Maria Julia reside
-  const aluno = await prisma.aluno.findUnique({
-    where: { id: userId },
-    include: {
-      coach: {
-        select: { name: true }
+  async findProfileByUserId(userId) {
+    const aluno = await prisma.aluno.findUnique({
+      where: { id: userId },
+      include: {
+        coach: {
+          select: { name: true }
+        }
       }
-    }
-  });
+    });
 
-  if (!aluno) return null;
+    if (!aluno) return null;
 
-  return {
-    nomeCompleto: aluno.nomeCompleto,
-    email: aluno.email,
-    idade: aluno.idade,
-    plano: aluno.plano,
-    tipoPlano: aluno.tipoPlano,
-    objetivo: aluno.objetivo,
-    dataInicio: aluno.dataCriacao, 
-    avatar: null,
-    coachNome: aluno.coach?.name
-  };
-}
+    return {
+      id: aluno.id,
+      nomeCompleto: aluno.nomeCompleto,
+      email: aluno.email,
+      idade: aluno.idade,
+      plano: aluno.plano,
+      tipoPlano: aluno.tipoPlano,
+      objetivo: aluno.objetivo,
+      dataInicio: aluno.dataCriacao, 
+      avatar: null,
+      coachNome: aluno.coach?.name
+    };
+  }
 
-async updateFirstAccess(id) {
+  async updateFirstAccess(id) {
     return await prisma.aluno.update({
       where: { id },
       data: { primeiroAcesso: true }
