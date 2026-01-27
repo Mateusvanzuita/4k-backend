@@ -31,8 +31,24 @@ const getProfile = async (req, res, next) => {
   }
 };
 
+// const forgotPassword = async (req, res, next) => {
+//   try {
+//     const { email } = req.body;
+//     // Chama o serviço para processar a lógica
+//     await authService.forgotPassword(email);
+    
+//     res.json({ 
+//       success: true, 
+//       message: "Se o e-mail estiver cadastrado, um link de recuperação será enviado." 
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 module.exports = {
   register,
   login,
   getProfile,
+  // forgotPassword,
 }

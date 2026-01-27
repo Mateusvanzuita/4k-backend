@@ -21,7 +21,8 @@ class AlimentoController {
   async getAll(req, res, next) {
     try {
       const coachId = req.user.id
-      const { page = 1, limit = 10, categoria, nome, orderBy = "nome", order = "asc" } = req.query
+      const { page = 1, limit = 10, categoria, nome, orderBy = "createdAt", 
+      order = "desc" } = req.query
 
       const filters = {
         coachId,

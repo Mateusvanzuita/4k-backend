@@ -147,8 +147,42 @@ const getProfile = async (userId) => {
   }
 }
 
+const forgotPassword = async (email) => {
+  // 1. Busca o usuário (pode ser Coach/Admin ou Aluno)
+  let user = await userRepository.findByEmail(email);
+  let isStudent = false;
+
+  if (!user) {
+    user = await prisma.aluno.findUnique({ where: { email } });
+    isStudent = true;
+  }
+
+  // Se o usuário não existir, retornamos sucesso por segurança (evita enumeração de e-mails)
+  if (!user) return;
+
+  // 2. Geração do Token (Aqui usamos o JWT com expiração curta de 1 hora)
+  const resetToken = jwt.sign(
+    { id: user.id, type: 'password-reset' }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: '1h' }
+  );
+
+  // 3. Montagem do Link (Aponta para a sua tela de RESET no Frontend)
+  const resetLink = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`;
+
+  // 4. Envio do E-mail via EmailService
+  await emailService.sendNotificationEmail(
+    user.email,
+    "Recuperação de Senha - 4K Team",
+    `Olá ${user.name || user.nomeCompleto}, clique no link abaixo para redefinir sua senha. O link expira em 1 hora:\n\n${resetLink}`
+  );
+
+  console.log(`🔗 Link de reset gerado para ${email}: ${resetLink}`);
+};
+
 module.exports = {
   register,
   login,
   getProfile,
+  
 }

@@ -15,47 +15,45 @@ class SuplementoRepository {
       },
     })
   }
+  
+async getAll(filters, page, limit, orderBy = "nomeSuplemento", order = "asc") {
+    const skip = (page - 1) * limit
+    
+    // Criamos uma cópia dos filtros para não alterar o objeto original
+    const whereClause = { ...filters }
 
-  async getAll(filters, page, limit, orderBy = "nomeSuplemento", order = "asc") {
-      const skip = (page - 1) * limit
-
-      // Garantir que orderBy não seja um dos campos removidos
-      if (["dosagem", "frequencia", "momento"].includes(orderBy)) {
-        orderBy = "nomeSuplemento"
-      }
-
-      const [suplementos, total] = await Promise.all([
-        prisma.suplemento.findMany({
-          where: filters,
-          skip,
-          take: limit,
-          orderBy: {
-            [orderBy]: order,
-          },
-          include: {
-            coach: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        }),
-        prisma.suplemento.count({
-          where: filters,
-        }),
-      ])
-
-      return {
-        suplementos,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      }
+    // Se houver filtro de nome, transformamos em busca textual nos dois campos possíveis
+    if (whereClause.nome) {
+      const searchName = whereClause.nome
+      delete whereClause.nome // Removemos a chave 'nome' simples
+      
+      whereClause.OR = [
+        { nomeSuplemento: { contains: searchName, mode: "insensitive" } },
+        { nomeManipulado: { contains: searchName, mode: "insensitive" } }
+      ]
     }
+
+    const [suplementos, total] = await Promise.all([
+      prisma.suplemento.findMany({
+        where: whereClause, // Usamos a cláusula montada
+        skip,
+        take: limit,
+        orderBy: { [orderBy]: order },
+        include: { coach: { select: { id: true, name: true } } },
+      }),
+      prisma.suplemento.count({ where: whereClause }),
+    ])
+
+    return {
+      suplementos,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+}
 
   async getById(id, coachId) {
     return await prisma.suplemento.findFirst({

@@ -29,47 +29,37 @@ class SuplementoController {
     }
   }
 
-  async getAllSuplementos(req, res) {
-    try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: "Parâmetros inválidos",
-          errors: errors.array(),
-        })
-      }
+// Localize o método getAllSuplementos e atualize a desestruturação:
+async getAllSuplementos(req, res) {
+  try {
+    const coachId = req.user.id
+    // ADICIONE 'nome' aqui para capturá-lo da URL
+    const { page = 1, limit = 10, orderBy = "nomeSuplemento", order = "asc", categoria, tipo, nome } = req.query
 
-      const coachId = req.user.id
-      const { page = 1, limit = 10, orderBy = "nomeSuplemento", order = "asc", categoria, tipo, momento } = req.query
+    const filters = {}
+    if (categoria) filters.categoria = categoria
+    if (tipo) filters.tipo = tipo
+    if (nome) filters.nome = nome // PASSE o nome para o objeto de filtros
 
-      const filters = {}
-      if (categoria) filters.categoria = categoria
-      if (tipo) filters.tipo = tipo
-      if (momento) filters.momento = momento
+    const result = await suplementoService.getAllSuplementos(
+      coachId,
+      filters,
+      Number.parseInt(page),
+      Number.parseInt(limit),
+      orderBy,
+      order,
+    )
 
-      const result = await suplementoService.getAllSuplementos(
-        coachId,
-        filters,
-        Number.parseInt(page),
-        Number.parseInt(limit),
-        orderBy,
-        order,
-      )
-
-      res.json({
-        success: true,
-        message: "Suplementos recuperados com sucesso",
-        data: result.suplementos,
-        pagination: result.pagination,
-      })
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      })
-    }
+    res.json({
+      success: true,
+      message: "Suplementos recuperados com sucesso",
+      data: result.suplementos,
+      pagination: result.pagination,
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
   }
+}
 
   async getSuplementoById(req, res) {
     try {

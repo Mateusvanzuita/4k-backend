@@ -72,4 +72,25 @@ router.post("/login", validateLogin, authController.login)
  */
 router.get("/profile", authenticateToken, authController.getProfile)
 
+// /**
+//  * @swagger
+//  * /api/auth/forgot-password:
+//  * post:
+//  * summary: Solicitar recuperação de senha
+//  * tags: [Auth]
+//  * requestBody:
+//  * required: true
+//  * content:
+//  * application/json:
+//  * schema:
+//  * type: object
+//  * properties:
+//  * email:
+//  * type: string
+//  * responses:
+//  * 200:
+//  * description: Email enviado com sucesso
+//  */
+// router.post("/forgot-password", authController.forgotPassword);
+
 module.exports = router

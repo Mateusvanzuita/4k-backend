@@ -6,10 +6,24 @@ class HormonioService {
     return await hormonioRepository.create(hormonioData)
   }
 
-  async getAllHormonios(coachId, filters = {}, page = 1, limit = 10, orderBy = "nomeHormonio", order = "asc") {
-    const whereClause = { coachId, ...filters }
-    return await hormonioRepository.getAll(whereClause, page, limit, orderBy, order)
-  }
+async getAllHormonios(coachId, filters = {}, page = 1, limit = 10, orderBy = "nomeHormonio", order = "asc") {
+    const whereClause = { coachId };
+
+    // Tratamento dinâmico de filtros
+    if (filters.categoria) {
+        whereClause.categoria = filters.categoria;
+    }
+
+    // ✅ CORREÇÃO: Se houver 'nome', transforma em busca textual no Prisma
+    if (filters.nome) {
+        whereClause.nomeHormonio = {
+            contains: filters.nome,
+            mode: 'insensitive' // Busca sem diferenciar maiúsculas/minúsculas
+        };
+    }
+
+    return await hormonioRepository.getAll(whereClause, page, limit, orderBy, order);
+}
 
   async getHormonioById(id, coachId) {
     const hormonio = await hormonioRepository.getById(id, coachId)
