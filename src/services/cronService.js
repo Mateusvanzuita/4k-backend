@@ -32,14 +32,15 @@ const checkPhotoFrequencies = async () => {
       else if (aluno.frequenciaFotos === 'QUINZENAL' && diferencaDias >= 15) deveNotificar = true;
       else if (aluno.frequenciaFotos === 'MENSAL' && diferencaDias >= 30) deveNotificar = true;
 
-      if (deveNotificar) {
-        await notificationService.createNotification({
-          title: "Dia de Atualização! 📸",
-          message: `Olá ${aluno.nomeCompleto}, hoje é o dia de enviar suas fotos de evolução conforme seu plano ${aluno.frequenciaFotos.toLowerCase()}.`,
-          receiverId: aluno.id
-        }, null);
-        console.log(`✅ Notificação enviada para o aluno: ${aluno.nomeCompleto}`);
-      }
+    if (deveNotificar) {
+      await notificationService.createNotification({
+        title: 'Dia de Atualização! 📸',
+        message: `Olá ${aluno.nomeCompleto}, hoje é o dia de enviar suas fotos de evolução.`,
+        receiverId: aluno.id,
+        senderId: null,
+        isStudent: true 
+      });
+    }
     }
   } catch (error) {
     console.error("❌ Erro no Cron de Fotos:", error);
